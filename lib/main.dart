@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter/material.dart';
 
@@ -28,6 +30,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   List<Contact> contacts = [];
   List<Contact> contactsFiltered = [];
+  Map<String, Color> contactsColorMap = new Map();
   TextEditingController searchController = new TextEditingController();
 
   @override
@@ -46,7 +49,22 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   getAllContacts() async {
+    List colors = [
+      Colors.green,
+      Colors.indigo,
+      Colors.yellow,
+      Colors.orange
+    ];
+    int colorIndex = 0;
     List<Contact> _contacts = (await ContactsService.getContacts()).toList();
+    _contacts.forEach((contact) {
+      Color baseColor = colors[colorIndex];
+      contactsColorMap[contact.displayName] = baseColor;
+      colorIndex++;
+      if (colorIndex == colors.length) {
+        colorIndex = 0;
+      }
+    });
     setState(() {
       contacts = _contacts;
     });
@@ -117,6 +135,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 itemCount: isSearching == true ? contactsFiltered.length : contacts.length,
                 itemBuilder: (context, index) {
                   Contact contact = isSearching == true ? contactsFiltered[index] : contacts[index];
+                  
+                  var baseColor = contactsColorMap[contact.displayName] as dynamic;
+
+                  Color color1 = baseColor[800];
+                  Color color2 = baseColor[400];
+                  
                   return ListTile(
                     title: Text(contact.displayName),
                     subtitle: Text(
@@ -126,7 +150,28 @@ class _MyHomePageState extends State<MyHomePage> {
                       CircleAvatar(
                         backgroundImage: MemoryImage(contact.avatar),
                       ) : 
-                      CircleAvatar(child: Text(contact.initials()))
+                      Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: [
+                              color1,
+                              color2,
+                            ],
+                            begin: Alignment.bottomLeft,
+                            end: Alignment.topRight
+                          )
+                        ),
+                        child: CircleAvatar(
+                          child: Text(
+                            contact.initials(),
+                            style: TextStyle(
+                              color: Colors.white
+                            )
+                          ),
+                          backgroundColor: Colors.transparent
+                        )
+                      )
                   );
                 },
               ),

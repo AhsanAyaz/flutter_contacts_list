@@ -2,12 +2,6 @@
 
 A new Flutter project to demonstrate how to implement a Contacts List via `contacts_service` package and how to search within that list using name or number.
 
-<div style="text-align: center">
-  <a href="https://youtu.be/NBIF-Wt_ZFQ" target="_blank">
-    <img src="assets/cover.png">
-  </a>
-</div>
-
 ## Video Tutorials
 ### Contacts List & Search Implementation in Flutter - Easy Peasy:
 [![Contacts List & Search Implementation in Flutter - Easy Peasy](https://i9.ytimg.com/vi/NBIF-Wt_ZFQ/mqdefault.jpg?time=1588022677716&sqp=CICZnfUF&rs=AOn4CLCcOnTlJHfCRx74TcJBobSuWY5iqA)](https://youtu.be/NBIF-Wt_ZFQ)

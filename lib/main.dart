@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() => runApp(MyApp());
 
@@ -36,10 +37,15 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    getAllContacts();
-    searchController.addListener(() {
-      filterContacts();
-    });
+    getPermissions();
+  }
+  getPermissions() async {
+    if (await Permission.contacts.request().isGranted) {
+      getAllContacts();
+      searchController.addListener(() {
+        filterContacts();
+      });
+    }
   }
 
   String flattenPhoneNumber(String phoneStr) {

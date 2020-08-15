@@ -100,11 +100,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
         return phone != null;
       });
-
-      setState(() {
-        contactsFiltered = _contacts;
-      });
     }
+    setState(() {
+      contactsFiltered = _contacts;
+    });
   }
 
   @override
@@ -146,11 +145,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
                   Color color1 = baseColor[800];
                   Color color2 = baseColor[400];
-                  
                   return ListTile(
                     title: Text(contact.displayName),
                     subtitle: Text(
-                      contact.phones.elementAt(0).value
+                      contact.phones.length > 0 ? contact.phones.elementAt(0).value : ''
                     ),
                     leading: (contact.avatar != null && contact.avatar.length > 0) ?
                       CircleAvatar(

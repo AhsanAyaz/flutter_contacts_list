@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:contacts_service/contacts_service.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -39,6 +37,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     getPermissions();
   }
+
   getPermissions() async {
     if (await Permission.contacts.request().isGranted) {
       getAllContacts();
@@ -121,64 +120,67 @@ class _MyHomePageState extends State<MyHomePage> {
               child: TextField(
                 controller: searchController,
                 decoration: InputDecoration(
-                  labelText: 'Search',
-                  border: new OutlineInputBorder(
-                    borderSide: new BorderSide(
-                      color: Theme.of(context).primaryColor
-                    )
-                  ),
-                  prefixIcon: Icon(
-                    Icons.search,
-                    color: Theme.of(context).primaryColor
-                  )
-                ),
+                    labelText: 'Search',
+                    border: new OutlineInputBorder(
+                        borderSide: new BorderSide(
+                            color: Theme.of(context).primaryColor)),
+                    prefixIcon: Icon(Icons.search,
+                        color: Theme.of(context).primaryColor)),
               ),
             ),
             Expanded(
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: isSearching == true ? contactsFiltered.length : contacts.length,
-                itemBuilder: (context, index) {
-                  Contact contact = isSearching == true ? contactsFiltered[index] : contacts[index];
-                  
-                  var baseColor = contactsColorMap[contact.displayName] as dynamic;
+              child: (contactsFiltered.length == 0 &&
+                          searchController.text.length != 0) ||
+                      contacts.length == 0
+                  ? Align(
+                      alignment: Alignment.center,
+                      child: Text(
+                        "No Contacts Found",
+                        style: TextStyle(color: Colors.grey, fontSize: 20),
+                      ))
+                  : ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: isSearching == true
+                          ? contactsFiltered.length
+                          : contacts.length,
+                      itemBuilder: (context, index) {
+                        Contact contact = isSearching == true
+                            ? contactsFiltered[index]
+                            : contacts[index];
 
-                  Color color1 = baseColor[800];
-                  Color color2 = baseColor[400];
-                  return ListTile(
-                    title: Text(contact.displayName),
-                    subtitle: Text(
-                      contact.phones.length > 0 ? contact.phones.elementAt(0).value : ''
+                        var baseColor =
+                            contactsColorMap[contact.displayName] as dynamic;
+
+                        Color color1 = baseColor[800];
+                        Color color2 = baseColor[400];
+                        return ListTile(
+                            title: Text(contact.displayName),
+                            subtitle: Text(contact.phones.length > 0
+                                ? contact.phones.elementAt(0).value
+                                : ''),
+                            leading: (contact.avatar != null &&
+                                    contact.avatar.length > 0)
+                                ? CircleAvatar(
+                                    backgroundImage:
+                                        MemoryImage(contact.avatar),
+                                  )
+                                : Container(
+                                    decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        gradient: LinearGradient(
+                                            colors: [
+                                              color1,
+                                              color2,
+                                            ],
+                                            begin: Alignment.bottomLeft,
+                                            end: Alignment.topRight)),
+                                    child: CircleAvatar(
+                                        child: Text(contact.initials(),
+                                            style:
+                                                TextStyle(color: Colors.white)),
+                                        backgroundColor: Colors.transparent)));
+                      },
                     ),
-                    leading: (contact.avatar != null && contact.avatar.length > 0) ?
-                      CircleAvatar(
-                        backgroundImage: MemoryImage(contact.avatar),
-                      ) : 
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [
-                              color1,
-                              color2,
-                            ],
-                            begin: Alignment.bottomLeft,
-                            end: Alignment.topRight
-                          )
-                        ),
-                        child: CircleAvatar(
-                          child: Text(
-                            contact.initials(),
-                            style: TextStyle(
-                              color: Colors.white
-                            )
-                          ),
-                          backgroundColor: Colors.transparent
-                        )
-                      )
-                  );
-                },
-              ),
             )
           ],
         ),

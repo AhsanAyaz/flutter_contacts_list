@@ -1,6 +1,5 @@
-import 'dart:math';
-
 import 'package:contacts_service/contacts_service.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -10,7 +9,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Flutter Contacts',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
@@ -109,6 +108,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     bool isSearching = searchController.text.isNotEmpty;
+    bool listItemsExist = (contactsFiltered.length > 0 || contacts.length > 0);
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -134,51 +134,58 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
             ),
-            Expanded(
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: isSearching == true ? contactsFiltered.length : contacts.length,
-                itemBuilder: (context, index) {
-                  Contact contact = isSearching == true ? contactsFiltered[index] : contacts[index];
-                  
-                  var baseColor = contactsColorMap[contact.displayName] as dynamic;
+            listItemsExist == true ?
+              Expanded(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: isSearching == true ? contactsFiltered.length : contacts.length,
+                  itemBuilder: (context, index) {
+                    Contact contact = isSearching == true ? contactsFiltered[index] : contacts[index];
 
-                  Color color1 = baseColor[800];
-                  Color color2 = baseColor[400];
-                  return ListTile(
-                    title: Text(contact.displayName),
-                    subtitle: Text(
-                      contact.phones.length > 0 ? contact.phones.elementAt(0).value : ''
-                    ),
-                    leading: (contact.avatar != null && contact.avatar.length > 0) ?
-                      CircleAvatar(
-                        backgroundImage: MemoryImage(contact.avatar),
-                      ) : 
-                      Container(
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [
-                              color1,
-                              color2,
-                            ],
-                            begin: Alignment.bottomLeft,
-                            end: Alignment.topRight
-                          )
-                        ),
-                        child: CircleAvatar(
-                          child: Text(
-                            contact.initials(),
-                            style: TextStyle(
-                              color: Colors.white
+                    var baseColor = contactsColorMap[contact.displayName] as dynamic;
+
+                    Color color1 = baseColor[800];
+                    Color color2 = baseColor[400];
+                    return ListTile(
+                      title: Text(contact.displayName),
+                      subtitle: Text(
+                        contact.phones.length > 0 ? contact.phones.elementAt(0).value : ''
+                      ),
+                      leading: (contact.avatar != null && contact.avatar.length > 0) ?
+                        CircleAvatar(
+                          backgroundImage: MemoryImage(contact.avatar),
+                        ) :
+                        Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: [
+                                color1,
+                                color2,
+                              ],
+                              begin: Alignment.bottomLeft,
+                              end: Alignment.topRight
                             )
                           ),
-                          backgroundColor: Colors.transparent
+                          child: CircleAvatar(
+                            child: Text(
+                              contact.initials(),
+                              style: TextStyle(
+                                color: Colors.white
+                              )
+                            ),
+                            backgroundColor: Colors.transparent
+                          )
                         )
-                      )
-                  );
-                },
-              ),
+                    );
+                  },
+                ),
+              ) : Container(
+              padding: EdgeInsets.all(20),
+              child: Text(
+                isSearching ?'No search results to show' : 'No contacts exist',
+                style: Theme.of(context).textTheme.headline6
+              ) ,
             )
           ],
         ),

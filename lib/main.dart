@@ -1,5 +1,6 @@
+import 'package:contacts_app/app-contact.class.dart';
+import 'package:contacts_app/components/contacts-list.dart';
 import 'package:contacts_service/contacts_service.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -28,10 +29,11 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<Contact> contacts = [];
-  List<Contact> contactsFiltered = [];
+  List<AppContact> contacts = [];
+  List<AppContact> contactsFiltered = [];
   Map<String, Color> contactsColorMap = new Map();
   TextEditingController searchController = new TextEditingController();
+  bool contactsLoaded = false;
 
   @override
   void initState() {
@@ -61,28 +63,28 @@ class _MyHomePageState extends State<MyHomePage> {
       Colors.orange
     ];
     int colorIndex = 0;
-    List<Contact> _contacts = (await ContactsService.getContacts()).toList();
-    _contacts.forEach((contact) {
+    List<AppContact> _contacts = (await ContactsService.getContacts()).map((contact) {
       Color baseColor = colors[colorIndex];
-      contactsColorMap[contact.displayName] = baseColor;
       colorIndex++;
       if (colorIndex == colors.length) {
         colorIndex = 0;
       }
-    });
+      return new AppContact(info: contact, color: baseColor);
+    }).toList();
     setState(() {
       contacts = _contacts;
+      contactsLoaded = true;
     });
   }
 
   filterContacts() {
-    List<Contact> _contacts = [];
+    List<AppContact> _contacts = [];
     _contacts.addAll(contacts);
     if (searchController.text.isNotEmpty) {
       _contacts.retainWhere((contact) {
         String searchTerm = searchController.text.toLowerCase();
         String searchTermFlatten = flattenPhoneNumber(searchTerm);
-        String contactName = contact.displayName.toLowerCase();
+        String contactName = contact.info.displayName.toLowerCase();
         bool nameMatches = contactName.contains(searchTerm);
         if (nameMatches == true) {
           return true;
@@ -92,7 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
           return false;
         }
 
-        var phone = contact.phones.firstWhere((phn) {
+        var phone = contact.info.phones.firstWhere((phn) {
           String phnFlattened = flattenPhoneNumber(phn.value);
           return phnFlattened.contains(searchTermFlatten);
         }, orElse: () => null);
@@ -108,7 +110,10 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     bool isSearching = searchController.text.isNotEmpty;
-    bool listItemsExist = (contactsFiltered.length > 0 || contacts.length > 0);
+    bool listItemsExist = (
+        (isSearching == true && contactsFiltered.length > 0) ||
+        (isSearching != true && contacts.length > 0)
+    );
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -134,58 +139,22 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
             ),
-            listItemsExist == true ?
-              Expanded(
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: isSearching == true ? contactsFiltered.length : contacts.length,
-                  itemBuilder: (context, index) {
-                    Contact contact = isSearching == true ? contactsFiltered[index] : contacts[index];
-
-                    var baseColor = contactsColorMap[contact.displayName] as dynamic;
-
-                    Color color1 = baseColor[800];
-                    Color color2 = baseColor[400];
-                    return ListTile(
-                      title: Text(contact.displayName),
-                      subtitle: Text(
-                        contact.phones.length > 0 ? contact.phones.elementAt(0).value : ''
-                      ),
-                      leading: (contact.avatar != null && contact.avatar.length > 0) ?
-                        CircleAvatar(
-                          backgroundImage: MemoryImage(contact.avatar),
-                        ) :
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [
-                                color1,
-                                color2,
-                              ],
-                              begin: Alignment.bottomLeft,
-                              end: Alignment.topRight
-                            )
-                          ),
-                          child: CircleAvatar(
-                            child: Text(
-                              contact.initials(),
-                              style: TextStyle(
-                                color: Colors.white
-                              )
-                            ),
-                            backgroundColor: Colors.transparent
-                          )
-                        )
-                    );
-                  },
-                ),
+            contactsLoaded == true ?  // if the contacts have not been loaded yet
+              listItemsExist == true ?  // if we have contacts to show
+              ContactsList(
+                contacts: isSearching == true ? contactsFiltered : contacts,
               ) : Container(
-              padding: EdgeInsets.all(20),
-              child: Text(
-                isSearching ?'No search results to show' : 'No contacts exist',
-                style: Theme.of(context).textTheme.headline6
-              ) ,
+                padding: EdgeInsets.only(top: 40),
+                child: Text(
+                  isSearching ?'No search results to show' : 'No contacts exist',
+                  style: TextStyle(color: Colors.grey, fontSize: 20),
+                )
+              ) :
+            Container(  // still loading contacts
+              padding: EdgeInsets.only(top: 40),
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
             )
           ],
         ),

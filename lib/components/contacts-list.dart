@@ -17,12 +17,11 @@ class ContactsList extends StatelessWidget {
           AppContact contact = contacts[index];
 
           return ListTile(
-              title: Text(contact.info.displayName),
-              subtitle: Text(
-                  contact.info.phones.length > 0 ? contact.info.phones.elementAt(0).value : ''
-              ),
-              leading: ContactAvatar(contact, 36)
-          );
+              title: Text(contact.info.displayName.toString()),
+              subtitle: Text(contact.info.phones.length > 0
+                  ? contact.info.phones.elementAt(0).value
+                  : ''),
+              leading: ContactAvatar(contact, 36));
         },
       ),
     );

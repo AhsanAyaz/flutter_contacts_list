@@ -118,6 +118,25 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        backgroundColor: Theme.of(context).primaryColorDark,
+        onPressed: () async {
+          try {
+            Contact contact = await ContactsService.openContactForm();
+            if (contact != null) {
+              getAllContacts();
+            }
+          } on FormOperationException catch (e) {
+            switch(e.errorCode) {
+              case FormOperationErrorCode.FORM_OPERATION_CANCELED:
+              case FormOperationErrorCode.FORM_COULD_NOT_BE_OPEN:
+              case FormOperationErrorCode.FORM_OPERATION_UNKNOWN_ERROR:
+                print(e.toString());
+            }
+          }
+        },
+      ),
       body: Container(
         padding: EdgeInsets.all(20),
         child: Column(
@@ -142,6 +161,9 @@ class _MyHomePageState extends State<MyHomePage> {
             contactsLoaded == true ?  // if the contacts have not been loaded yet
               listItemsExist == true ?  // if we have contacts to show
               ContactsList(
+                reloadContacts: () {
+                  getAllContacts();
+                },
                 contacts: isSearching == true ? contactsFiltered : contacts,
               ) : Container(
                 padding: EdgeInsets.only(top: 40),
